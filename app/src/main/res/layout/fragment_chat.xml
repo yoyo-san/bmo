@@ -20,17 +20,6 @@
         android:layout_height="50dip"
         android:layout_gravity="bottom" >
 
-        <EditText
-            android:id="@+id/txtChatLine"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_weight="0.90"
-            android:focusableInTouchMode="true"
-            android:hint="@string/txt_hint"
-            android:visibility="visible" >
-        </EditText>
-
         <Button
             android:id="@+id/button1"
             android:layout_width="wrap_content"
