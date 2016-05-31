@@ -40,7 +40,8 @@ public class VoiceManager implements Runnable, MediaPlayer.OnBufferingUpdateList
         }
         byte[] buffer = new byte[1024];
         int bytes;
-
+        handler.obtainMessage(MainActivity.MY_HANDLE, this)
+                .sendToTarget();
         while (true) {
             try {
                 // Read from the InputStream

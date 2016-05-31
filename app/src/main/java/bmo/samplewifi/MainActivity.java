@@ -55,6 +55,7 @@ public class MainActivity extends Activity implements DeviceClickListener, Messa
 
     public static final int DISABLE_PTT = 0x400 + 1;
     public static final int ENABLE_PTT = 0x400 + 2;
+    public static final int MY_HANDLE = 0x400 + 3;
     public static final String VOICE_START = "SILENCE!!!!";
     public static final String VOICE_END = "Sing to me...";
     private WifiP2pManager manager;
@@ -283,6 +284,10 @@ public class MainActivity extends Activity implements DeviceClickListener, Messa
             case ENABLE_PTT:
                 findViewById(R.id.button1).setEnabled(true);
                 break;
+
+            case MY_HANDLE:
+                Object obj = msg.obj;
+                (chatFragment).setVoiceManager((VoiceManager) obj);
         }
         return true;
     }

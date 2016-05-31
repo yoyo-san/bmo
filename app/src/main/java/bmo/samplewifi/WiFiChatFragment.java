@@ -37,7 +37,8 @@ public class WiFiChatFragment extends Fragment {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     if (voiceManager != null) {
                         voiceManager.talk();
-                    }                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    }
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     if (voiceManager != null) {
                         voiceManager.shaddap();
                     }
