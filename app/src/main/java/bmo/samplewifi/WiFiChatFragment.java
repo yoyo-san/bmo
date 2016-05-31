@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -32,6 +33,7 @@ public class WiFiChatFragment extends Fragment {
         view.findViewById(R.id.button1).setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                Log.d(getClass().getName(), "YAHOO!");
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     if (voiceManager != null) {
                         voiceManager.talk();

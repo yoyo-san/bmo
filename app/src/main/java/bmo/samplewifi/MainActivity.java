@@ -44,7 +44,7 @@ import java.util.Map;
  * {@code WiFiChatFragment} is then added to the the main activity which manages
  * the interface and messaging needs for a chat session.
  */
-public class MainActivity extends Activity implements DeviceClickListener, Handler.Callback, ConnectionInfoListener {
+public class MainActivity extends Activity implements DeviceClickListener, MessageTarget, Handler.Callback, ConnectionInfoListener {
 
     public static final String TAG = "wifidirectdemo";
 
