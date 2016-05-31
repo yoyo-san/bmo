@@ -13,7 +13,7 @@ public class ClientSocketHandler extends Thread {
 
     private static final String TAG = "ClientSocketHandler";
     private Handler handler;
-    private ChatManager chat;
+    private VoiceManager voiceManager;
     private InetAddress mAddress;
 
     public ClientSocketHandler(Handler handler, InetAddress groupOwnerAddress) {
@@ -28,8 +28,8 @@ public class ClientSocketHandler extends Thread {
             socket.bind(null);
             socket.connect(new InetSocketAddress(mAddress.getHostAddress(), MainActivity.SERVER_PORT), 5000);
             Log.d(TAG, "Launching the I/O handler");
-            chat = new ChatManager(socket, handler);
-            new Thread(chat).start();
+            voiceManager = new VoiceManager(socket, handler);
+            new Thread(voiceManager).start();
         } catch (IOException e) {
             e.printStackTrace();
             try {
@@ -41,8 +41,8 @@ public class ClientSocketHandler extends Thread {
         }
     }
 
-    public ChatManager getChat() {
-        return chat;
+    public VoiceManager getVoiceManager() {
+        return voiceManager;
     }
 
 }

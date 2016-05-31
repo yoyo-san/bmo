@@ -22,6 +22,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import bmo.samplewifi.WiFiChatFragment.MessageTarget;
@@ -52,8 +53,10 @@ public class MainActivity extends Activity implements DeviceClickListener, Handl
     public static final String SERVICE_INSTANCE = "_wifidemotest";
     public static final String SERVICE_REG_TYPE = "_presence._tcp";
 
-    public static final int MESSAGE_READ = 0x400 + 1;
-    public static final int MY_HANDLE = 0x400 + 2;
+    public static final int DISABLE_PTT = 0x400 + 1;
+    public static final int ENABLE_PTT = 0x400 + 2;
+    public static final String VOICE_START = "SILENCE!!!!";
+    public static final String VOICE_END = "Sing to me...";
     private WifiP2pManager manager;
 
     static final int SERVER_PORT = 4545;
@@ -274,18 +277,12 @@ public class MainActivity extends Activity implements DeviceClickListener, Handl
     @Override
     public boolean handleMessage(Message msg) {
         switch (msg.what) {
-            case MESSAGE_READ:
-                byte[] readBuf = (byte[]) msg.obj;
-                // construct a string from the valid bytes in the buffer
-                String readMessage = new String(readBuf, 0, msg.arg1);
-                Log.d(TAG, readMessage);
-                (chatFragment).pushMessage("Buddy: " + readMessage);
+            case DISABLE_PTT:
+                findViewById(R.id.button1).setEnabled(false);
                 break;
-
-            case MY_HANDLE:
-                Object obj = msg.obj;
-                (chatFragment).setChatManager((ChatManager) obj);
-
+            case ENABLE_PTT:
+                findViewById(R.id.button1).setEnabled(true);
+                break;
         }
         return true;
     }

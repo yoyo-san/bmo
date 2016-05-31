@@ -13,6 +13,7 @@ import java.net.Socket;
  * Handles reading and writing of messages with socket buffers. Uses a Handler
  * to post messages to UI thread for UI updates.
  */
+/*
 public class ChatManager implements Runnable {
 
     private Socket socket = null;
@@ -69,10 +70,10 @@ public class ChatManager implements Runnable {
         try {
             oStream.write(buffer);
         } catch (IOException e) {
-            Log.e(TAG, "Exception during write", e);
+            Log.e(TAG, "Exception during talk", e);
         }
     }
 
 }
-
+*/
 
