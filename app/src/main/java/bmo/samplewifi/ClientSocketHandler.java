@@ -25,6 +25,7 @@ public class ClientSocketHandler extends Thread {
     public void run() {
         Socket socket = new Socket();
         try {
+            socket.setKeepAlive(true);
             socket.bind(null);
             socket.connect(new InetSocketAddress(mAddress.getHostAddress(), MainActivity.SERVER_PORT), 5000);
             Log.d(TAG, "Launching the I/O handler");

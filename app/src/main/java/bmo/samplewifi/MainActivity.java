@@ -5,6 +5,10 @@ import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
+import android.graphics.Color;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -56,9 +60,11 @@ public class MainActivity extends Activity implements DeviceClickListener, Messa
     public static final int DISABLE_PTT = 0x400 + 1;
     public static final int ENABLE_PTT = 0x400 + 2;
     public static final int MY_HANDLE = 0x400 + 3;
+    public static final int MESSAGE_READ = 0x400 + 4;
     public static final String VOICE_START = "SILENCE!!!!";
-    public static final String VOICE_END = "Sing to me...";
+    public static final String VOICE_END   = "Sing to me!";
     private WifiP2pManager manager;
+    private AudioTrack audioTrack;
 
     static final int SERVER_PORT = 4545;
 
@@ -98,6 +104,9 @@ public class MainActivity extends Activity implements DeviceClickListener, Messa
         manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         channel = manager.initialize(this, getMainLooper(), null);
         startRegistrationAndDiscovery();
+        int minBufferSize = AudioTrack.getMinBufferSize(VoiceManager.FREQUENCY, AudioFormat.CHANNEL_OUT_MONO, VoiceManager.ENCODING);
+        audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,VoiceManager.FREQUENCY,
+                VoiceManager.CHANNEL_CONFIG, VoiceManager.ENCODING, minBufferSize, AudioTrack.MODE_STREAM);
 
         servicesList = new WiFiDirectServicesList();
         getFragmentManager().beginTransaction()
@@ -280,14 +289,23 @@ public class MainActivity extends Activity implements DeviceClickListener, Messa
         switch (msg.what) {
             case DISABLE_PTT:
                 findViewById(R.id.button1).setEnabled(false);
+                findViewById(R.id.button1).setBackgroundColor(Color.RED);
                 break;
             case ENABLE_PTT:
                 findViewById(R.id.button1).setEnabled(true);
+                findViewById(R.id.button1).setBackgroundColor(Color.GREEN);
                 break;
 
             case MY_HANDLE:
                 Object obj = msg.obj;
                 (chatFragment).setVoiceManager((VoiceManager) obj);
+                break;
+
+            case MESSAGE_READ:
+                byte[] readBuf = (byte[]) msg.obj;
+                audioTrack.play();
+                audioTrack.write(readBuf,0, readBuf.length);
+                break;
         }
         return true;
     }
