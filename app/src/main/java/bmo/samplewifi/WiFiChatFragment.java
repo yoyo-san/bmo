@@ -14,6 +14,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,10 +34,18 @@ public class WiFiChatFragment extends Fragment {
         view.findViewById(R.id.button1).setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                Log.d(getClass().getName(), "YAHOO!");
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     if (voiceManager != null) {
-                        voiceManager.talk();
+                        new Runnable(){
+                            @Override
+                            public void run() {
+                                try {
+                                    voiceManager.talk();
+                                } catch (IOException e) {
+                                    Log.e(getClass().getName(), e.toString());
+                                }
+                            }
+                        }.run();
                     }
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     if (voiceManager != null) {

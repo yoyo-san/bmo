@@ -9,6 +9,8 @@ import android.graphics.Color;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.media.MediaFormat;
+import android.media.MediaPlayer;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -24,6 +26,7 @@ import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -34,6 +37,7 @@ import bmo.samplewifi.WiFiDirectServicesList.DeviceClickListener;
 import bmo.samplewifi.WiFiDirectServicesList.WiFiDevicesAdapter;
 
 import java.io.IOException;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,7 +52,7 @@ import java.util.Map;
  * {@code WiFiChatFragment} is then added to the the main activity which manages
  * the interface and messaging needs for a chat session.
  */
-public class MainActivity extends Activity implements DeviceClickListener, MessageTarget, Handler.Callback, ConnectionInfoListener {
+public class MainActivity extends Activity implements DeviceClickListener, MessageTarget, Handler.Callback, ConnectionInfoListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnPreparedListener {
 
     public static final String TAG = "wifidirectdemo";
 
@@ -86,6 +90,7 @@ public class MainActivity extends Activity implements DeviceClickListener, Messa
     public void setHandler(Handler handler) {
         this.handler = handler;
     }
+
 
     /** Called when the activity is first created. */
     @Override
@@ -302,9 +307,10 @@ public class MainActivity extends Activity implements DeviceClickListener, Messa
                 break;
 
             case MESSAGE_READ:
-                byte[] readBuf = (byte[]) msg.obj;
-                audioTrack.play();
-                audioTrack.write(readBuf,0, readBuf.length);
+                byte[] buffer = (byte[]) msg.obj;
+                if(audioTrack.getPlayState() != AudioTrack.PLAYSTATE_PLAYING)
+                    audioTrack.play();
+                audioTrack.write(buffer, 0, buffer.length);
                 break;
         }
         return true;
@@ -359,5 +365,24 @@ public class MainActivity extends Activity implements DeviceClickListener, Messa
     public void appendStatus(String status) {
         String current = statusTxtView.getText().toString();
         statusTxtView.setText(current + "\n" + status);
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mediaPlayer) {
+        mediaPlayer.release();
+        mediaPlayer.stop();
+    }
+
+    @Override
+    public void onBufferingUpdate(MediaPlayer mediaPlayer, int i) {
+        if(!mediaPlayer.isPlaying()) {
+            mediaPlayer.start();
+        }
+    }
+
+    @Override
+    public void onPrepared(MediaPlayer mediaPlayer) {
+        Log.d(TAG, "Hello!");
+        mediaPlayer.start();
     }
 }
