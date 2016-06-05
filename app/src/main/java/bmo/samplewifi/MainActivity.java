@@ -9,6 +9,8 @@ import android.graphics.Color;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.media.MediaFormat;
+import android.media.MediaRecorder;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -106,7 +108,8 @@ public class MainActivity extends Activity implements DeviceClickListener, Messa
         startRegistrationAndDiscovery();
         int minBufferSize = AudioTrack.getMinBufferSize(VoiceManager.FREQUENCY, AudioFormat.CHANNEL_OUT_MONO, VoiceManager.ENCODING);
         audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,VoiceManager.FREQUENCY,
-                VoiceManager.CHANNEL_CONFIG, VoiceManager.ENCODING, minBufferSize, AudioTrack.MODE_STREAM);
+                AudioFormat.CHANNEL_CONFIGURATION_MONO, VoiceManager.ENCODING, minBufferSize, AudioTrack.MODE_STREAM);
+        audioTrack.play();
 
         servicesList = new WiFiDirectServicesList();
         getFragmentManager().beginTransaction()
@@ -269,7 +272,6 @@ public class MainActivity extends Activity implements DeviceClickListener, Messa
                         public void onFailure(int arg0) {
                         }
                     });
-
         manager.connect(channel, config, new ActionListener() {
 
             @Override
@@ -303,7 +305,9 @@ public class MainActivity extends Activity implements DeviceClickListener, Messa
 
             case MESSAGE_READ:
                 byte[] readBuf = (byte[]) msg.obj;
-                audioTrack.play();
+                Log.d(TAG, "Playing " + readBuf.length);
+                if(audioTrack.getPlayState() != AudioTrack.PLAYSTATE_PLAYING)
+                    audioTrack.play();
                 audioTrack.write(readBuf,0, readBuf.length);
                 break;
         }

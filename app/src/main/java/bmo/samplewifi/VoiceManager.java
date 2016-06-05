@@ -11,16 +11,23 @@ import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.Random;
 
-public class VoiceManager implements Runnable, MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener {
+public class VoiceManager implements Runnable {
     private Socket socket = null;
     private Handler handler;
-    private MediaRecorder recorder;
+    private AudioRecord recorder;
     private AudioStream audioStream;
     private InputStream iStream;
     private OutputStream oStream;
@@ -30,7 +37,8 @@ public class VoiceManager implements Runnable, MediaPlayer.OnBufferingUpdateList
     private boolean talking = false;
     public static final int FREQUENCY = 44100;
     public static final int ENCODING = AudioFormat.ENCODING_PCM_16BIT;
-    public static final int CHANNEL_CONFIG = AudioFormat.CHANNEL_CONFIGURATION_MONO;
+    public static final int CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO;
+    int bufferSize;
 
     public VoiceManager(Socket socket, Handler handler) {
         this.socket = socket;
@@ -40,85 +48,72 @@ public class VoiceManager implements Runnable, MediaPlayer.OnBufferingUpdateList
     @Override
     public void run() {
         try {
+            bufferSize = AudioRecord.getMinBufferSize(FREQUENCY, CHANNEL_CONFIG, ENCODING);
             iStream = socket.getInputStream();
-            oStream = socket.getOutputStream();
-            byte[] buffer = new byte[1024];
-            int bytes;
+            DataInputStream in = new DataInputStream(new BufferedInputStream(iStream));
+
+            byte[] buffer = new byte[bufferSize];
             handler.obtainMessage(MainActivity.MY_HANDLE, this)
                     .sendToTarget();
+            int read = 0;
+            AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,VoiceManager.FREQUENCY,
+                    AudioFormat.CHANNEL_CONFIGURATION_MONO, VoiceManager.ENCODING, bufferSize, AudioTrack.MODE_STREAM);
+            audioTrack.play();
 
-            while (true) {
-                try {
-                    // Read from the InputStream
-                    bytes = iStream.read(buffer);
-                    if (bytes == -1) {
-                        break;
-                    }
-
-                    // Send the obtained bytes to the UI Activity
-                    Log.d(TAG, "Rec:" + String.valueOf(buffer));
-                    handler.obtainMessage(MainActivity.MESSAGE_READ,
-                            bytes, -1, buffer).sendToTarget();
-                } catch (IOException e) {
-                    Log.e(TAG, "disconnected", e);
-                }
+            while((read = iStream.read(buffer)) != -1) {
+                // Send the obtained bytes to the UI Activity
+                //handler.obtainMessage(MainActivity.MESSAGE_READ, buffer).sendToTarget();
+                audioTrack.write(buffer, 0, read);
             }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+            /*
             try {
-                socket.close();
+                Log.d(TAG, "");
             } catch (IOException e) {
                 e.printStackTrace();
-            }
+            }*/
         }
-    }
-
-    @Override
-    public void onBufferingUpdate(MediaPlayer mediaPlayer, int i) {
-        Log.d(TAG, "Buffer update");
-    }
-
-    @Override
-    public void onCompletion(MediaPlayer mediaPlayer) {
-        Log.d(TAG, "COMPLETE");
-    }
-
-    @Override
-    public void onPrepared(MediaPlayer mediaPlayer) {
-        Log.d(TAG, "Prepared update");
     }
 
     public void talk() {
-        Log.d(getClass().getName(), "Talking");
-        int bufferSize = AudioRecord.getMinBufferSize(FREQUENCY, CHANNEL_CONFIG, ENCODING);
-        AudioRecord audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,FREQUENCY,CHANNEL_CONFIG,ENCODING, bufferSize);
-        byte[] audioData = new byte[bufferSize];
-        audioRecord.startRecording();
-        talking = true;
-        int read = 0;
-        Log.d(TAG, "talking: " + talking);
-        while (talking) {
-            read = audioRecord.read(audioData,0,bufferSize);
-            if(AudioRecord.ERROR_INVALID_OPERATION != read){
+        new Runnable() {
+            public void run() {
+                Log.d(getClass().getName(), "Talking");
+                DataOutputStream out = null;
+
                 try {
-                    oStream.write(audioData);
+                    out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.e(TAG, e.toString());
+                }
+                recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, FREQUENCY, CHANNEL_CONFIG, ENCODING, bufferSize);
+                byte[] buffer = new byte[bufferSize];
+                int read;
+
+                recorder.startRecording();
+                talking = true;
+
+                try {
+                    while (talking) {
+                        read = recorder.read(buffer, 0, bufferSize);
+                        if (read != -1) {
+                            Log.d(TAG, read + " bytes");
+                            socket.getOutputStream().write(buffer, 0, read);
+                        }
+                    }
+                    recorder.stop();
+                    recorder.release();
+                    out.close();
+                } catch (IOException e) {
+                    Log.e(TAG, e.toString());
                 }
             }
-        }
+        }.run();
     }
 
     public void shaddap() {
         talking = false;
-        if(recorder != null) {
-            try {
-                talking = false;
-            } catch (Exception e) {
-                Log.e(TAG, e.toString());
-            }
-            recorder = null;
-        }
     }
 }
