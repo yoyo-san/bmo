@@ -62,11 +62,7 @@ public class MainActivity extends Activity implements DeviceClickListener, Messa
     public static final int DISABLE_PTT = 0x400 + 1;
     public static final int ENABLE_PTT = 0x400 + 2;
     public static final int MY_HANDLE = 0x400 + 3;
-    public static final int MESSAGE_READ = 0x400 + 4;
-    public static final String VOICE_START = "SILENCE!!!!";
-    public static final String VOICE_END   = "Sing to me!";
     private WifiP2pManager manager;
-    private AudioTrack audioTrack;
 
     static final int SERVER_PORT = 4545;
 
@@ -83,10 +79,6 @@ public class MainActivity extends Activity implements DeviceClickListener, Messa
 
     public Handler getHandler() {
         return handler;
-    }
-
-    public void setHandler(Handler handler) {
-        this.handler = handler;
     }
 
     /** Called when the activity is first created. */
@@ -106,10 +98,6 @@ public class MainActivity extends Activity implements DeviceClickListener, Messa
         manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         channel = manager.initialize(this, getMainLooper(), null);
         startRegistrationAndDiscovery();
-        int minBufferSize = AudioTrack.getMinBufferSize(VoiceManager.FREQUENCY, AudioFormat.CHANNEL_OUT_MONO, VoiceManager.ENCODING);
-        audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,VoiceManager.FREQUENCY,
-                AudioFormat.CHANNEL_CONFIGURATION_MONO, VoiceManager.ENCODING, minBufferSize, AudioTrack.MODE_STREAM);
-        audioTrack.play();
 
         servicesList = new WiFiDirectServicesList();
         getFragmentManager().beginTransaction()
@@ -301,14 +289,6 @@ public class MainActivity extends Activity implements DeviceClickListener, Messa
             case MY_HANDLE:
                 Object obj = msg.obj;
                 (chatFragment).setVoiceManager((VoiceManager) obj);
-                break;
-
-            case MESSAGE_READ:
-                byte[] readBuf = (byte[]) msg.obj;
-                Log.d(TAG, "Playing " + readBuf.length);
-                if(audioTrack.getPlayState() != AudioTrack.PLAYSTATE_PLAYING)
-                    audioTrack.play();
-                audioTrack.write(readBuf,0, readBuf.length);
                 break;
         }
         return true;

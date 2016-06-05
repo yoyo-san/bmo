@@ -35,10 +35,12 @@ public class WiFiChatFragment extends Fragment {
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     if (voiceManager != null) {
+                        Log.d("Fragment", "Pressed PTT");
                         voiceManager.talk();
                     }
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     if (voiceManager != null) {
+                        Log.d("Fragment", "Released PTT");
                         voiceManager.shaddap();
                     }
                 }
